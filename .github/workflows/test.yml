@@ -26,7 +26,7 @@ jobs:
       matrix:
         # run on beta to ensure that tests won't break on the next version of the rust toolchain
         # run on msrv to ensure that tests won't break on the minimum supported version of the rust
-        toolchain: [stable, beta, 1.60.0]
+        toolchain: [1.62.0, stable, beta]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
