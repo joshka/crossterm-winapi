@@ -1,18 +1,13 @@
 //! This module contains some logic for working with the console handle.
 
-use std::io::Result;
-use std::ops::Deref;
-use std::sync::Arc;
+use std::{io::Result, ops::Deref, sync::Arc};
 
-use windows::Win32::Storage::FileSystem::{
-    CreateFileW, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING,
-};
-use windows::Win32::System::Console::{
-    GetStdHandle, STD_HANDLE, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE,
-};
 use windows::Win32::{
     Foundation::{CloseHandle, GENERIC_READ, GENERIC_WRITE, HANDLE, INVALID_HANDLE_VALUE},
-    Storage::FileSystem::FILE_FLAGS_AND_ATTRIBUTES,
+    Storage::FileSystem::{
+        CreateFileW, FILE_FLAGS_AND_ATTRIBUTES, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING,
+    },
+    System::Console::{GetStdHandle, STD_HANDLE, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE},
 };
 
 /// The standard handles of a process.

@@ -17,6 +17,7 @@ use windows::Win32::System::Console::{
 };
 
 use super::Coord;
+
 use crate::ScreenBuffer;
 
 /// A [keyboard input event](https://docs.microsoft.com/en-us/windows/console/key-event-record-str).

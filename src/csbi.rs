@@ -1,5 +1,4 @@
 use std::fmt;
-use std::mem::zeroed;
 
 use windows::Win32::System::Console::CONSOLE_SCREEN_BUFFER_INFO;
 
@@ -31,9 +30,9 @@ impl fmt::Debug for ScreenBufferInfo {
 }
 
 impl ScreenBufferInfo {
-    /// Create a new console screen buffer without all zeroed properties.
+    /// Create a new console screen buffer with default (zeroed) properties.
     pub fn new() -> ScreenBufferInfo {
-        ScreenBufferInfo(unsafe { zeroed() })
+        ScreenBufferInfo(CONSOLE_SCREEN_BUFFER_INFO::default())
     }
 
     /// Get the size of the screen buffer.

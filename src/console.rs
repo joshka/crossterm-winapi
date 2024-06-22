@@ -1,7 +1,7 @@
-use std::io::{self, Result};
-use std::iter;
-use std::slice;
-use std::str;
+use std::{
+    io::{self, Result},
+    iter, slice, str,
+};
 
 use windows::Win32::System::Console::{
     FillConsoleOutputAttribute, FillConsoleOutputCharacterA, GetLargestConsoleWindowSize,
@@ -165,10 +165,9 @@ impl Console {
             return Ok(vec![]);
         }
 
-        let mut buf: Vec<INPUT_RECORD> =
-            iter::repeat_with(|| unsafe { ::std::mem::zeroed::<INPUT_RECORD>() })
-                .take(buf_len as usize)
-                .collect();
+        let mut buf: Vec<INPUT_RECORD> = iter::repeat_with(INPUT_RECORD::default)
+            .take(buf_len as usize)
+            .collect();
 
         let num_read = self.read_input(buf.as_mut_slice())?;
 

@@ -1,5 +1,4 @@
 use std::fmt;
-use std::mem::zeroed;
 
 use windows::Win32::System::Console::CONSOLE_FONT_INFO;
 
@@ -23,9 +22,9 @@ impl fmt::Debug for FontInfo {
 }
 
 impl FontInfo {
-    /// Create a new font info without all zeroed properties.
+    /// Create a new font info with default (zeroed) properties.
     pub fn new() -> FontInfo {
-        FontInfo(unsafe { zeroed() })
+        FontInfo(CONSOLE_FONT_INFO::default())
     }
 
     /// Get the size of the font.

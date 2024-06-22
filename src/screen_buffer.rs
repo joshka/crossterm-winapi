@@ -1,7 +1,6 @@
 //! This contains the logic for working with the console buffer.
 
-use std::io::Result;
-use std::mem::size_of;
+use std::{io::Result, mem::size_of};
 
 use windows::Win32::{
     Foundation::{GENERIC_READ, GENERIC_WRITE},
