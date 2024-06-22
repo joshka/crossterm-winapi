@@ -1,7 +1,7 @@
 use std::fmt;
 use std::mem::zeroed;
 
-use winapi::um::wincontypes::CONSOLE_FONT_INFO;
+use windows_sys::Win32::System::Console::CONSOLE_FONT_INFO;
 
 use crate::Size;
 
@@ -38,5 +38,11 @@ impl FontInfo {
     /// Get the index of the font in the system's console font table.
     pub fn index(&self) -> u32 {
         self.0.nFont
+    }
+}
+
+impl Default for FontInfo {
+    fn default() -> Self {
+        Self::new()
     }
 }

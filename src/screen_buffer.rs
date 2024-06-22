@@ -3,13 +3,13 @@
 use std::io::Result;
 use std::mem::size_of;
 
-use windows_sys::Win32::Security::SECURITY_ATTRIBUTES;
 use windows_sys::Win32::Storage::FileSystem::{FILE_SHARE_READ, FILE_SHARE_WRITE};
 use windows_sys::Win32::System::Console::{
     CreateConsoleScreenBuffer, GetConsoleScreenBufferInfo, SetConsoleActiveScreenBuffer,
     SetConsoleScreenBufferSize, CONSOLE_TEXTMODE_BUFFER, COORD,
 };
 use windows_sys::Win32::System::SystemServices::{GENERIC_READ, GENERIC_WRITE};
+use windows_sys::Win32::{Security::SECURITY_ATTRIBUTES, System::Console::GetCurrentConsoleFont};
 pub const TRUE: ::windows_sys::Win32::Foundation::BOOL = 1;
 
 use super::{handle_result, result, FontInfo, Handle, HandleType, ScreenBufferInfo};

@@ -213,7 +213,7 @@ impl Console {
     /// a u32.
     fn read_input(&self, buf: &mut [INPUT_RECORD]) -> Result<usize> {
         let mut num_records = 0;
-        debug_assert!(buf.len() < std::u32::MAX as usize);
+        debug_assert!(buf.len() < u32::MAX as usize);
 
         result(unsafe {
             ReadConsoleInputW(

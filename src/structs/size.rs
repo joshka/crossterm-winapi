@@ -24,8 +24,8 @@ impl From<COORD> for Size {
     }
 }
 
-impl Into<(u16, u16)> for Size {
-    fn into(self) -> (u16, u16) {
-        (self.width as u16, self.height as u16)
+impl From<Size> for (u16, u16) {
+    fn from(val: Size) -> Self {
+        (val.width as u16, val.height as u16)
     }
 }

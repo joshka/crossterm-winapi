@@ -35,8 +35,8 @@ impl From<Coord> for COORD {
     }
 }
 
-impl Into<(u16, u16)> for Coord {
-    fn into(self) -> (u16, u16) {
-        (self.x as u16, self.y as u16)
+impl From<Coord> for (u16, u16) {
+    fn from(val: Coord) -> Self {
+        (val.x as u16, val.y as u16)
     }
 }

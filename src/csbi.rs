@@ -75,6 +75,12 @@ impl ScreenBufferInfo {
     }
 }
 
+impl Default for ScreenBufferInfo {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl From<CONSOLE_SCREEN_BUFFER_INFO> for ScreenBufferInfo {
     fn from(csbi: CONSOLE_SCREEN_BUFFER_INFO) -> Self {
         ScreenBufferInfo(csbi)
