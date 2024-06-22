@@ -3,8 +3,7 @@
 
 use std::io;
 
-use windows_sys::Win32::Foundation::{BOOL, HANDLE, INVALID_HANDLE_VALUE};
-use windows_sys::Win32::System::Console::COORD;
+use windows::Win32::System::Console::COORD;
 
 pub use self::{
     cfi::FontInfo,
@@ -29,16 +28,6 @@ mod screen_buffer;
 mod semaphore;
 mod structs;
 
-/// Get the result of a call to WinAPI as an [`io::Result`].
-#[inline]
-pub fn result(return_value: BOOL) -> io::Result<()> {
-    if return_value != 0 {
-        Ok(())
-    } else {
-        Err(io::Error::last_os_error())
-    }
-}
-
 /// Get the result of a call to WinAPI that returns a
 /// [`COORD`](https://docs.microsoft.com/en-us/windows/console/coord-str) as an [`io::Result`].
 #[inline]
@@ -47,25 +36,5 @@ pub fn coord_result(return_value: COORD) -> io::Result<Coord> {
         Ok(Coord::from(return_value))
     } else {
         Err(io::Error::last_os_error())
-    }
-}
-
-/// Get the result of a call to WinAPI that returns a handle or `INVALID_HANDLE_VALUE`.
-#[inline]
-pub fn handle_result(return_value: HANDLE) -> io::Result<HANDLE> {
-    if return_value != INVALID_HANDLE_VALUE {
-        Ok(return_value)
-    } else {
-        Err(io::Error::last_os_error())
-    }
-}
-
-/// Get the result of a call to WinAPI that returns a handle or `NULL`.
-#[inline]
-pub fn nonnull_handle_result(return_value: HANDLE) -> io::Result<HANDLE> {
-    if return_value == 0 {
-        Err(io::Error::last_os_error())
-    } else {
-        Ok(return_value)
     }
 }

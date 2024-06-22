@@ -1,7 +1,7 @@
 use std::fmt;
 use std::mem::zeroed;
 
-use windows_sys::Win32::System::Console::CONSOLE_FONT_INFO;
+use windows::Win32::System::Console::CONSOLE_FONT_INFO;
 
 use crate::Size;
 

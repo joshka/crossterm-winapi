@@ -2,20 +2,18 @@
 
 use std::io::Result;
 use std::ops::Deref;
-use std::ptr::{null, null_mut};
 use std::sync::Arc;
 
-use windows_sys::Win32::Foundation::{
-    CloseHandle, GENERIC_READ, GENERIC_WRITE, HANDLE, INVALID_HANDLE_VALUE,
-};
-use windows_sys::Win32::Storage::FileSystem::{
+use windows::Win32::Storage::FileSystem::{
     CreateFileW, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING,
 };
-use windows_sys::Win32::System::Console::{
+use windows::Win32::System::Console::{
     GetStdHandle, STD_HANDLE, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE,
 };
-
-use super::handle_result;
+use windows::Win32::{
+    Foundation::{CloseHandle, GENERIC_READ, GENERIC_WRITE, HANDLE, INVALID_HANDLE_VALUE},
+    Storage::FileSystem::FILE_FLAGS_AND_ATTRIBUTES,
+};
 
 /// The standard handles of a process.
 ///
@@ -65,7 +63,7 @@ impl Drop for Inner {
     fn drop(&mut self) {
         if self.is_exclusive {
             assert!(
-                unsafe { CloseHandle(self.handle) != 0 },
+                unsafe { CloseHandle(self.handle).is_ok() },
                 "failed to close handle"
             )
         }
@@ -115,17 +113,17 @@ impl Handle {
     /// This wraps
     /// [`CreateFileW`](https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew).
     pub fn current_out_handle() -> Result<Handle> {
-        let handle = handle_result(unsafe {
+        let handle = unsafe {
             CreateFileW(
-                ::windows_sys::w!("CONOUT$"),
-                GENERIC_READ | GENERIC_WRITE,
+                ::windows::core::w!("CONOUT$"),
+                (GENERIC_READ | GENERIC_WRITE).0,
                 FILE_SHARE_READ | FILE_SHARE_WRITE,
-                null(),
+                None, // no security attributes
                 OPEN_EXISTING,
-                0,
-                0,
+                FILE_FLAGS_AND_ATTRIBUTES::default(),
+                None, // no template file
             )
-        })?;
+        }?;
 
         Ok(Handle {
             handle: Arc::new(Inner::new_exclusive(handle)),
@@ -139,17 +137,17 @@ impl Handle {
     /// This wraps
     /// [`CreateFileW`](https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew).
     pub fn current_in_handle() -> Result<Handle> {
-        let handle = handle_result(unsafe {
+        let handle = unsafe {
             CreateFileW(
-                ::windows_sys::w!("CONIN$"),
-                GENERIC_READ | GENERIC_WRITE,
+                ::windows::core::w!("CONIN$"),
+                (GENERIC_READ | GENERIC_WRITE).0,
                 FILE_SHARE_READ | FILE_SHARE_WRITE,
-                null_mut(),
+                None, // no security attributes
                 OPEN_EXISTING,
-                0,
-                0,
+                FILE_FLAGS_AND_ATTRIBUTES::default(),
+                None, // no template file
             )
-        })?;
+        }?;
 
         Ok(Handle {
             handle: Arc::new(Inner::new_exclusive(handle)),
@@ -177,8 +175,7 @@ impl Handle {
     }
 
     fn std_handle(which_std: STD_HANDLE) -> Result<Handle> {
-        let handle = handle_result(unsafe { GetStdHandle(which_std) })?;
-
+        let handle = unsafe { GetStdHandle(which_std) }?;
         Ok(Handle {
             handle: Arc::new(Inner::new_shared(handle)),
         })

@@ -1,8 +1,8 @@
-use std::{io, ptr};
+use std::io;
 
-use windows_sys::Win32::System::Threading::{CreateSemaphoreW, ReleaseSemaphore};
+use windows::Win32::System::Threading::{CreateSemaphoreW, ReleaseSemaphore};
 
-use crate::{nonnull_handle_result, result, Handle};
+use crate::Handle;
 
 /// A [Windows semaphore](https://docs.microsoft.com/en-us/windows/win32/sync/semaphore-objects).
 #[derive(Clone, Debug)]
@@ -14,9 +14,14 @@ impl Semaphore {
     /// This wraps
     /// [`CreateSemaphoreW`](https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-createsemaphorew).
     pub fn new() -> io::Result<Self> {
-        let handle =
-            nonnull_handle_result(unsafe { CreateSemaphoreW(ptr::null(), 0, 1, ptr::null()) })?;
-
+        let handle = unsafe {
+            CreateSemaphoreW(
+                None,                  // no security attributes
+                0,                     // initial count
+                1,                     // maximum count
+                windows::core::w!(""), // unnamed semaphore
+            )
+        }?;
         let handle = unsafe { Handle::from_raw(handle) };
         Ok(Self(handle))
     }
@@ -26,7 +31,9 @@ impl Semaphore {
     /// This wraps
     /// [`ReleaseSemaphore`](https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-releasesemaphore).
     pub fn release(&self) -> io::Result<()> {
-        result(unsafe { ReleaseSemaphore(*self.0, 1, ptr::null_mut()) })
+        let previous_count = None;
+        unsafe { ReleaseSemaphore(*self.0, 1, previous_count) }?;
+        Ok(())
     }
 
     /// Access the underlying handle to the semaphore.

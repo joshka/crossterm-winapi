@@ -9,7 +9,7 @@
 //! - `InputEventType`
 //! - `INPUT_RECORD`
 
-use windows_sys::Win32::System::Console::{
+use windows::Win32::System::Console::{
     FOCUS_EVENT, FOCUS_EVENT_RECORD, FROM_LEFT_1ST_BUTTON_PRESSED, FROM_LEFT_2ND_BUTTON_PRESSED,
     FROM_LEFT_3RD_BUTTON_PRESSED, FROM_LEFT_4TH_BUTTON_PRESSED, INPUT_RECORD, KEY_EVENT,
     KEY_EVENT_RECORD, MENU_EVENT, MENU_EVENT_RECORD, MOUSE_EVENT, MOUSE_EVENT_RECORD,
@@ -50,7 +50,7 @@ impl KeyEventRecord {
     #[inline]
     fn from_winapi(record: &KEY_EVENT_RECORD) -> Self {
         KeyEventRecord {
-            key_down: record.bKeyDown != 0,
+            key_down: record.bKeyDown.as_bool(),
             repeat_count: record.wRepeatCount,
             virtual_key_code: record.wVirtualKeyCode,
             virtual_scan_code: record.wVirtualScanCode,
@@ -163,16 +163,6 @@ impl ButtonState {
         self.state > 0
     }
 
-    /// Returns whether there is a horizontal scroll to the right.
-    pub fn scroll_right(&self) -> bool {
-        self.state > 0
-    }
-
-    /// Returns whether there is a horizontal scroll to the left.
-    pub fn scroll_left(&self) -> bool {
-        self.state < 0
-    }
-
     /// Returns the raw state.
     pub fn state(&self) -> i32 {
         self.state
@@ -268,7 +258,7 @@ impl From<FOCUS_EVENT_RECORD> for FocusEventRecord {
     #[inline]
     fn from(record: FOCUS_EVENT_RECORD) -> Self {
         FocusEventRecord {
-            set_focus: record.bSetFocus != 0,
+            set_focus: record.bSetFocus.as_bool(),
         }
     }
 }

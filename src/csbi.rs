@@ -1,7 +1,7 @@
 use std::fmt;
 use std::mem::zeroed;
 
-use windows_sys::Win32::System::Console::CONSOLE_SCREEN_BUFFER_INFO;
+use windows::Win32::System::Console::CONSOLE_SCREEN_BUFFER_INFO;
 
 use super::{Coord, Size, WindowPositions};
 
@@ -64,7 +64,7 @@ impl ScreenBufferInfo {
     ///
     /// Will take `wAttributes` from the current screen buffer.
     pub fn attributes(&self) -> u16 {
-        self.0.wAttributes
+        self.0.wAttributes.0
     }
 
     /// Get the current column and row of the terminal cursor in the screen buffer.

@@ -3,15 +3,14 @@ use std::iter;
 use std::slice;
 use std::str;
 
-use std::ffi::c_void;
-use windows_sys::Win32::System::Console::{
+use windows::Win32::System::Console::{
     FillConsoleOutputAttribute, FillConsoleOutputCharacterA, GetLargestConsoleWindowSize,
     GetNumberOfConsoleInputEvents, ReadConsoleInputW, SetConsoleTextAttribute,
-    SetConsoleWindowInfo, WriteConsoleW, COORD, INPUT_RECORD, SMALL_RECT,
+    SetConsoleWindowInfo, WriteConsoleW, CONSOLE_CHARACTER_ATTRIBUTES, COORD, INPUT_RECORD,
+    SMALL_RECT,
 };
-const NULL: *mut c_void = 0 as *mut c_void;
 
-use super::{result, Coord, Handle, HandleType, InputRecord, WindowPositions};
+use super::{Coord, Handle, HandleType, InputRecord, WindowPositions};
 
 /// A wrapper around a screen buffer.
 #[derive(Debug, Clone)]
@@ -38,7 +37,7 @@ impl Console {
     /// This wraps
     /// [`SetConsoleTextAttribute`](https://docs.microsoft.com/en-us/windows/console/setconsoletextattribute).
     pub fn set_text_attribute(&self, value: u16) -> Result<()> {
-        result(unsafe { SetConsoleTextAttribute(*self.handle, value) })?;
+        unsafe { SetConsoleTextAttribute(*self.handle, CONSOLE_CHARACTER_ATTRIBUTES(value)) }?;
         Ok(())
     }
 
@@ -47,14 +46,8 @@ impl Console {
     /// This wraps
     /// [`SetConsoleWindowInfo`](https://docs.microsoft.com/en-us/windows/console/setconsolewindowinfo).
     pub fn set_console_info(&self, absolute: bool, rect: WindowPositions) -> Result<()> {
-        let absolute = match absolute {
-            true => 1,
-            false => 0,
-        };
         let a = SMALL_RECT::from(rect);
-
-        result(unsafe { SetConsoleWindowInfo(*self.handle, absolute, &a) })?;
-
+        unsafe { SetConsoleWindowInfo(*self.handle, absolute, &a) }?;
         Ok(())
     }
 
@@ -63,23 +56,23 @@ impl Console {
     ///
     /// This wraps
     /// [`FillConsoleOutputCharacterA`](https://docs.microsoft.com/en-us/windows/console/fillconsoleoutputcharacter).
-    pub fn fill_whit_character(
+    pub fn fill_with_character(
         &self,
         start_location: Coord,
         cells_to_write: u32,
         filling_char: char,
     ) -> Result<u32> {
         let mut chars_written = 0;
-        result(unsafe {
+        unsafe {
             // fill the cells in console with blanks
             FillConsoleOutputCharacterA(
                 *self.handle,
-                filling_char as u8,
+                filling_char as i8,
                 cells_to_write,
                 COORD::from(start_location),
                 &mut chars_written,
             )
-        })?;
+        }?;
 
         Ok(chars_written)
     }
@@ -97,7 +90,7 @@ impl Console {
     ) -> Result<u32> {
         let mut cells_written = 0;
         // Get the position of the current console window
-        result(unsafe {
+        unsafe {
             FillConsoleOutputAttribute(
                 *self.handle,
                 dw_attribute,
@@ -105,7 +98,7 @@ impl Console {
                 COORD::from(start_location),
                 &mut cells_written,
             )
-        })?;
+        }?;
 
         Ok(cells_written)
     }
@@ -133,20 +126,9 @@ impl Console {
             }
         };
 
-        let utf16: Vec<u16> = utf8.encode_utf16().collect();
-        let utf16_ptr: *const c_void = utf16.as_ptr() as *const _ as *const c_void;
+        let cells_written: Option<*mut u32> = None;
 
-        let mut cells_written: u32 = 0;
-
-        result(unsafe {
-            WriteConsoleW(
-                *self.handle,
-                utf16_ptr,
-                utf16.len() as u32,
-                &mut cells_written,
-                NULL,
-            )
-        })?;
+        unsafe { WriteConsoleW(*self.handle, buf, cells_written, None) }?;
 
         Ok(utf8.as_bytes().len())
     }
@@ -156,7 +138,7 @@ impl Console {
     /// This wraps
     /// [`ReadConsoleInputW`](https://docs.microsoft.com/en-us/windows/console/readconsoleinput).
     pub fn read_single_input_event(&self) -> Result<InputRecord> {
-        let mut record: INPUT_RECORD = unsafe { ::std::mem::zeroed() };
+        let mut record: INPUT_RECORD = INPUT_RECORD::default();
 
         {
             // Convert an INPUT_RECORD to an &mut [INPUT_RECORD] of length 1
@@ -203,7 +185,7 @@ impl Console {
     /// [`GetNumberOfConsoleInputEvents`](https://docs.microsoft.com/en-us/windows/console/getnumberofconsoleinputevents).
     pub fn number_of_console_input_events(&self) -> Result<u32> {
         let mut buf_len = 0;
-        result(unsafe { GetNumberOfConsoleInputEvents(*self.handle, &mut buf_len) })?;
+        unsafe { GetNumberOfConsoleInputEvents(*self.handle, &mut buf_len) }?;
         Ok(buf_len)
     }
 
@@ -214,16 +196,7 @@ impl Console {
     fn read_input(&self, buf: &mut [INPUT_RECORD]) -> Result<usize> {
         let mut num_records = 0;
         debug_assert!(buf.len() < u32::MAX as usize);
-
-        result(unsafe {
-            ReadConsoleInputW(
-                *self.handle,
-                buf.as_mut_ptr(),
-                buf.len() as u32,
-                &mut num_records,
-            )
-        })?;
-
+        unsafe { ReadConsoleInputW(*self.handle, buf, &mut num_records) }?;
         Ok(num_records as usize)
     }
 }
